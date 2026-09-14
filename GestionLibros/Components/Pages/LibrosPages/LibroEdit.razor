@@ -1,0 +1,134 @@
+﻿@page "/Libro/edit/{LibroId:int}"
+@inject LibrosService librosService
+@inject ToastService toastService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>Modificar Libro</PageTitle>
+
+<EditForm Model="libro" OnValidSubmit="@Modificar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h5>Modificar Libro</h5>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>LibroId</strong></label>
+                    <InputNumber class="form-control" @bind-Value="libro.LibroId" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Título</strong></label>
+                    <InputText class="form-control" @bind-Value="libro.Titulo" />
+                    <ValidationMessage For="@(() => libro.Titulo)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Autor</strong></label>
+                    <InputText class="form-control" @bind-Value="libro.Autor" />
+                    <ValidationMessage For="@(() => libro.Autor)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Año de Publicación</strong></label>
+                    <InputNumber class="form-control" @bind-Value="libro.AnoPublicacion" />
+                    <ValidationMessage For="@(() => libro.AnoPublicacion)" />
+                </div>
+            </div>
+
+            <div class="card-footer text-center">
+                <a href="/Libros/index" class="btn btn-secondary">
+                    <span class="bi bi-arrow-left"></span> Volver
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <span class="bi bi-floppy"></span> Modificar
+                </button>
+                <button type="button" class="btn btn-danger" @onclick="Eliminar">
+                    <span class="bi bi-trash"></span> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int LibroId { get; set; }
+
+    private Libro libro { get; set; } = new Libro();
+    private bool libroNoEncontrado = false;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var LibroEncontrado = await librosService.Buscar(LibroId);
+        if (LibroEncontrado != null)
+        {
+            libro = LibroEncontrado;
+        }
+        else
+        {
+            libroNoEncontrado = true;
+        }
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && libroNoEncontrado)
+        {
+            await toastService.Error("Error", "Libro no encontrado");
+            await Task.Delay(4000);
+            NavigationManager.NavigateTo("/Libros/index");
+        }
+    }
+    private async Task Modificar()
+    {
+        try
+        {
+            var actualizado = await librosService.Guardar(libro);
+
+            if (actualizado)
+            {
+                await toastService.Success("Éxito", "Libro modificado correctamente");
+                await Task.Delay(4000);
+                NavigationManager.NavigateTo("/Libros/index");
+            }
+            else
+            {
+                await toastService.Error("Error", "No se pudo modificar el libro");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            await toastService.Error("Error", ex.Message);
+        }
+    }
+
+    private async Task Eliminar()
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm", "¿Está seguro de eliminar este libro?");
+
+        if (confirmado)
+        {
+            var eliminado = await librosService.Eliminar(libro.LibroId);
+
+            if (eliminado)
+            {
+                await toastService.Success("Éxito", "Libro eliminado correctamente");
+                await Task.Delay(4000);
+                NavigationManager.NavigateTo("/Libros/index");
+            }
+            else
+            {
+                await toastService.Error("Error", "No se pudo eliminar el libro");
+            }
+        }
+    }
+}

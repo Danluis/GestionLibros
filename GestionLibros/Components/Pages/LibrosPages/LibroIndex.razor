@@ -1,0 +1,141 @@
+﻿@page "/Libros/Index"
+@inject LibrosService LibrosService
+@rendermode InteractiveServer
+<PageTitle>Consulta de Libros</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Consulta de Libros</h5>
+            <a href="/Libro/create" class="btn btn-primary">
+                <span class="bi bi-plus-circle"></span> Nuevo Libro
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label"><span class="bi bi-funnel"></span> Filtrar por</label>
+                    <select class="form-select" @bind="criterioSeleccionado">
+                        <option value="">Elija una opción</option>
+                        <option value="libroId">Id</option>
+                        <option value="titulo">Título</option>
+                        <option value="autor">Autor</option>
+                        <option value="anio">Año de Publicación</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Búsqueda</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Buscar"
+                               @bind="textoBusqueda" @bind:event="oninput"
+                               @onkeyup="ManejarTecla" />
+                        <button class="btn btn-outline-secondary" @onclick="Buscar">
+                            <span class="bi bi-search"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @if (libros is null)
+            {
+                <p>Cargando...</p>
+            }
+            else
+            {
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>LibroId</th>
+                            <th>Título</th>
+                            <th>Autor</th>
+                            <th>Año Publicación</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var libro in libros)
+                        {
+                            <tr>
+                                <td>@libro.LibroId</td>
+                                <td>@libro.Titulo</td>
+                                <td>@libro.Autor</td>
+                                <td>@libro.AnoPublicacion</td>
+                                <td>
+                                    <a href="@($"/Libro/edit/{libro.LibroId}")" class="btn btn-sm btn-outline-primary"><span class="bi bi-pencil-square"></span> Editar</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <p class="text-muted">Cantidad: @libros.Count</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Libro>? libros;
+    private string criterioSeleccionado = "";
+    private string textoBusqueda = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        libros = await LibrosService.Listar(l => true);
+    }
+
+    private async Task ManejarTecla(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Buscar();
+        }
+    }
+
+    private async Task Buscar()
+    {
+
+        if (string.IsNullOrWhiteSpace(textoBusqueda) || string.IsNullOrEmpty(criterioSeleccionado))
+        {
+            libros = await LibrosService.Listar(l => true);
+            return;
+        }
+
+        switch (criterioSeleccionado)
+        {
+            case "libroId":
+                if (int.TryParse(textoBusqueda, out int idBuscado))
+                {
+                    libros = await LibrosService.Listar(l => l.LibroId == idBuscado);
+                }
+                else
+                {
+                    libros = new List<Libro>();
+                }
+                break;
+
+            case "titulo":
+                libros = await LibrosService.Listar(l => l.Titulo.Contains(textoBusqueda));
+                break;
+
+            case "autor":
+                libros = await LibrosService.Listar(l => l.Autor.Contains(textoBusqueda));
+                break;
+
+            case "anio":
+                if (int.TryParse(textoBusqueda, out int anioBuscado))
+                {
+                    libros = await LibrosService.Listar(l => l.AnoPublicacion == anioBuscado);
+                }
+                else
+                {
+                    libros = new List<Libro>();
+                }
+                break;
+
+            default:
+                libros = await LibrosService.Listar(l => true);
+                break;
+        }
+
+    }
+}

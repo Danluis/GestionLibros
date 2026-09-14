@@ -1,0 +1,81 @@
+﻿@page "/Libro/create"
+@inject LibrosService librosService
+@inject ToastService toastService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+@*HTML*@
+
+<PageTitle>Create</PageTitle>
+<EditForm Model="libro" OnValidSubmit="@Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5>Crear Libros</h5>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>LibroId</strong></label>
+                    <InputNumber class="form-control" @bind-Value="libro.LibroId" readonly />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Título</strong></label>
+                    <InputText class="form-control" @bind-Value="libro.Titulo" />
+                    <ValidationMessage For="@(() => libro.Titulo)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Autor</strong></label>
+                    <InputText class="form-control" @bind-Value="libro.Autor" />
+                    <ValidationMessage For="@(() => libro.Autor)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Año de Publicación</strong></label>
+                    <InputNumber class="form-control" @bind-Value="libro.AnoPublicacion" />
+                    <ValidationMessage For="@(() => libro.AnoPublicacion)" />
+                </div>
+            </div>
+
+            <div class="card-footer text-center mt-2">
+                <a href="/Libros/index" class="btn btn-secondary"> <span class="bi bi-arrow-left"> Volver</span></a>
+                <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+            </div>
+        </div>
+    </div>
+
+</EditForm>
+
+@code {
+
+    private Libro libro { get; set; } = new Libro
+    {
+        AnoPublicacion = DateTime.Now.Year
+    };
+
+    private async Task Guardar()
+    {
+        try
+        {
+            var creado = await librosService.Guardar(libro);
+
+            if (creado)
+            {
+                await toastService.Success("Libro creado correctamente", "El libro ha sido creado exitosamente.");
+                await Task.Delay(4000);
+                NavigationManager.NavigateTo("/Libros/index");
+            }
+            else
+            {
+                await toastService.Error("Error al crear el libro", "No se pudo crear el libro.");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            await toastService.Error("Error al crear el libro", ex.Message);
+        }
+    }
+}

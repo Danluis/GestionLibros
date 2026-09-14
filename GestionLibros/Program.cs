@@ -1,10 +1,25 @@
 using GestionLibros.Components;
-
+using GestionLibros.DAL;
+using Microsoft.EntityFrameworkCore;
+using GestionLibros.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+// Obtenemos el ConStr para usarlo en el contexto
+var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
+
+//Agregamos el contexto al builder con el ConStr
+builder.Services.AddDbContextFactory<Contexto>(Options =>
+{
+    Options.UseSqlite(ConStr);
+});
+
+//Inteccion del service
+
+builder.Services.AddScoped<LibrosService>();
+builder.Services.AddScoped<ToastService>();
 
 var app = builder.Build();
 

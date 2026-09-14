@@ -7,6 +7,7 @@
     <base href="/" />
     <ResourcePreloader />
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
+    <link rel="stylesheet" href="@Assets["lib/bootstrap-icons/font/bootstrap-icons.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["GestionLibros.styles.css"]" />
     <ImportMap />
@@ -17,6 +18,9 @@
 <body>
     <Routes />
     <ReconnectModal />
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
+    <script src="@Assets["lib/bootstrap/dist/js/bootstrap.bundle.min.js"]"></script>
+    <script src="@Assets["js/site.js"]"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
