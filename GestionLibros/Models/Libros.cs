@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GestionLibros.Models
 {
-    public class Libro
+    public class Libros
     {
         [Key]
         public int LibroId { get; set; }
