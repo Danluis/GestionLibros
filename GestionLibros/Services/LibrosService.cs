@@ -5,7 +5,9 @@ using System.Linq.Expressions;
 
 namespace GestionLibros.Services
 {
-    public class LibrosService(IDbContextFactory<Contexto> DbFactory)
+    public class LibrosService(
+        IDbContextFactory<Contexto> DbFactory
+    ) : Aplicada1.Core.IService<Libro, int>
     {
 
         public async Task<bool> TituloExiste(string titulo, int libroIdActual)
@@ -69,7 +71,7 @@ namespace GestionLibros.Services
                 .ExecuteDeleteAsync() > 0;
         }
 
-        public async Task<List<Libro>> Listar(Expression<Func<Libro, bool>> criterio) 
+        public async Task<List<Libro>> GetList(Expression<Func<Libro, bool>> criterio)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
             return await contexto.Libros
@@ -77,5 +79,6 @@ namespace GestionLibros.Services
                 .AsNoTracking()
                 .ToListAsync();
         }
+
     }
 } 
