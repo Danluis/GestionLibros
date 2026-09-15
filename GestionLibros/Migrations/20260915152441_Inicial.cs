@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -19,7 +18,7 @@ namespace GestionLibros.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Titulo = table.Column<string>(type: "TEXT", nullable: false),
                     Autor = table.Column<string>(type: "TEXT", nullable: false),
-                    FechaPublicacion = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    AnoPublicacion = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -74,13 +74,13 @@
 </div>
 
 @code {
-    private List<Libro>? libros;
+    private List<Libros>? libros;
     private string criterioSeleccionado = "";
     private string textoBusqueda = "";
 
     protected override async Task OnInitializedAsync()
     {
-        libros = await LibrosService.Listar(l => true);
+        libros = await LibrosService.GetList(l => true);
     }
 
     private async Task ManejarTecla(KeyboardEventArgs e)
@@ -96,7 +96,7 @@
 
         if (string.IsNullOrWhiteSpace(textoBusqueda) || string.IsNullOrEmpty(criterioSeleccionado))
         {
-            libros = await LibrosService.Listar(l => true);
+            libros = await LibrosService.GetList(l => true);
             return;
         }
 
@@ -105,35 +105,35 @@
             case "libroId":
                 if (int.TryParse(textoBusqueda, out int idBuscado))
                 {
-                    libros = await LibrosService.Listar(l => l.LibroId == idBuscado);
+                    libros = await LibrosService.GetList(l => l.LibroId == idBuscado);
                 }
                 else
                 {
-                    libros = new List<Libro>();
+                    libros = new List<Libros>();
                 }
                 break;
 
             case "titulo":
-                libros = await LibrosService.Listar(l => l.Titulo.Contains(textoBusqueda));
+                libros = await LibrosService.GetList(l => l.Titulo.Contains(textoBusqueda));
                 break;
 
             case "autor":
-                libros = await LibrosService.Listar(l => l.Autor.Contains(textoBusqueda));
+                libros = await LibrosService.GetList(l => l.Autor.Contains(textoBusqueda));
                 break;
 
             case "anio":
                 if (int.TryParse(textoBusqueda, out int anioBuscado))
                 {
-                    libros = await LibrosService.Listar(l => l.AnoPublicacion == anioBuscado);
+                    libros = await LibrosService.GetList(l => l.AnoPublicacion == anioBuscado);
                 }
                 else
                 {
-                    libros = new List<Libro>();
+                    libros = new List<Libros>();
                 }
                 break;
 
             default:
-                libros = await LibrosService.Listar(l => true);
+                libros = await LibrosService.GetList(l => true);
                 break;
         }
 

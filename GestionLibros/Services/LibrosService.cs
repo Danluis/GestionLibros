@@ -1,11 +1,13 @@
-﻿using GestionLibros.DAL;
+﻿using GestionLibros.Context;
 using GestionLibros.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace GestionLibros.Services
 {
-    public class LibrosService(IDbContextFactory<Contexto> DbFactory)
+    public class LibrosService(
+    IDbContextFactory<Contexto> DbFactory
+    ) : Aplicada1.Core.IService<Libros, int>
     {
 
         public async Task<bool> TituloExiste(string titulo, int libroIdActual)
@@ -15,7 +17,7 @@ namespace GestionLibros.Services
                 .AnyAsync(l => l.Titulo == titulo && l.LibroId != libroIdActual);
         }
 
-        public async Task<bool> Guardar(Libro libro)
+        public async Task<bool> Guardar(Libros libro)
         {
             if (await TituloExiste(libro.Titulo, libro.LibroId))
             {
@@ -38,14 +40,14 @@ namespace GestionLibros.Services
             return await contexto.Libros
                 .AnyAsync(l => l.LibroId == libroId);
         }
-        private async Task<bool> Insertar(Libro libro)
+        private async Task<bool> Insertar(Libros libro)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
             contexto.Libros.Add(libro);
             return await contexto.SaveChangesAsync() > 0;
         }
 
-        private async Task<bool> Modificar(Libro libro)
+        private async Task<bool> Modificar(Libros libro)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
             contexto.Libros.Update(libro);
@@ -53,7 +55,7 @@ namespace GestionLibros.Services
                 SaveChangesAsync() > 0;
         }
 
-        public async Task<Libro?> Buscar(int libroId)
+        public async Task<Libros?> Buscar(int libroId)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
             return await contexto.Libros
@@ -69,7 +71,7 @@ namespace GestionLibros.Services
                 .ExecuteDeleteAsync() > 0;
         }
 
-        public async Task<List<Libro>> Listar(Expression<Func<Libro, bool>> criterio) 
+        public async Task<List<Libros>> GetList(Expression<Func<Libros, bool>> criterio) 
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
             return await contexto.Libros
