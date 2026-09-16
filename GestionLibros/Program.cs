@@ -1,5 +1,5 @@
 using GestionLibros.Components;
-using GestionLibros.DAL;
+using GestionLibros.Context;
 using Microsoft.EntityFrameworkCore;
 using GestionLibros.Services;
 var builder = WebApplication.CreateBuilder(args);
