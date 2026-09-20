@@ -1,0 +1,138 @@
+﻿@page "/Estudiante/edit/{EstudianteId:int}"
+@inject EstudiantesService estudiantesService
+@inject ToastService toastService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>Modificar Estudiante</PageTitle>
+
+<EditForm Model="estudiante" OnValidSubmit="@Modificar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h5>Modificar Estudiante</h5>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>EstudianteId</strong></label>
+                    <InputNumber class="form-control" @bind-Value="estudiante.EstudianteId" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombres</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Nombres" />
+                    <ValidationMessage For="@(() => estudiante.Nombres)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Dirección</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Direccion" />
+                    <ValidationMessage For="@(() => estudiante.Direccion)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Email</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Email" />
+                    <ValidationMessage For="@(() => estudiante.Email)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de Nacimiento</strong></label>
+                    <InputDate class="form-control" @bind-Value="estudiante.FechaNacimiento" />
+                    <ValidationMessage For="@(() => estudiante.FechaNacimiento)" />
+                </div>
+            </div>
+
+            <div class="card-footer text-center">
+                <a href="/Estudiantes/index" class="btn btn-secondary">
+                    <span class="bi bi-arrow-left"></span> Volver
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <span class="bi bi-floppy"></span> Modificar
+                </button>
+                <button type="button" class="btn btn-danger" @onclick="Eliminar">
+                    <span class="bi bi-trash"></span> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int EstudianteId { get; set; }
+
+    private Estudiantes estudiante { get; set; } = new Estudiantes();
+    private bool estudianteNoEncontrado = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var encontrado = await estudiantesService.Buscar(EstudianteId);
+        if (encontrado != null)
+        {
+            estudiante = encontrado;
+        }
+        else
+        {
+            estudianteNoEncontrado = true;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && estudianteNoEncontrado)
+        {
+            await toastService.Error("Error", "Estudiante no encontrado");
+            await Task.Delay(4000);
+            NavigationManager.NavigateTo("/Estudiantes/index");
+        }
+    }
+
+    private async Task Modificar()
+    {
+        try
+        {
+            var actualizado = await estudiantesService.Guardar(estudiante);
+
+            if (actualizado)
+            {
+                await toastService.Success("Éxito", "Estudiante modificado correctamente");
+                await Task.Delay(4000);
+                NavigationManager.NavigateTo("/Estudiantes/index");
+            }
+            else
+            {
+                await toastService.Error("Error", "No se pudo modificar el estudiante");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            await toastService.Error("Error", ex.Message);
+        }
+    }
+
+    private async Task Eliminar()
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm", "¿Está seguro de eliminar este estudiante?");
+
+        if (confirmado)
+        {
+            var eliminado = await estudiantesService.Eliminar(estudiante.EstudianteId);
+
+            if (eliminado)
+            {
+                await toastService.Success("Éxito", "Estudiante eliminado correctamente");
+                await Task.Delay(4000);
+                NavigationManager.NavigateTo("/Estudiantes/index");
+            }
+            else
+            {
+                await toastService.Error("Error", "No se pudo eliminar el estudiante");
+            }
+        }
+    }
+}
