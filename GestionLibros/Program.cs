@@ -13,12 +13,13 @@ var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
 //Agregamos el contexto al builder con el ConStr
 builder.Services.AddDbContextFactory<Contexto>(Options =>
 {
-    Options.UseSqlite(ConStr);
+    Options.UseSqlServer(ConStr);
 });
 
 //Inteccion del service
 
 builder.Services.AddScoped<LibrosService>();
+builder.Services.AddScoped<EstudiantesService>();
 builder.Services.AddScoped<ToastService>();
 
 var app = builder.Build();

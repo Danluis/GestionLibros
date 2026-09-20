@@ -1,0 +1,130 @@
+﻿@page "/Estudiantes/Index"
+@inject EstudiantesService EstudiantesService
+@rendermode InteractiveServer
+
+<PageTitle>Consulta de Estudiantes</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Consulta de Estudiantes</h5>
+            <a href="/Estudiante/create" class="btn btn-primary">
+                <span class="bi bi-plus-circle"></span> Nuevo Estudiante
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label"><span class="bi bi-funnel"></span> Filtrar por</label>
+                    <select class="form-select" @bind="criterioSeleccionado">
+                        <option value="">Elija una opción</option>
+                        <option value="estudianteId">Id</option>
+                        <option value="nombres">Nombres</option>
+                        <option value="email">Email</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Búsqueda</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Buscar"
+                               @bind="textoBusqueda" @bind:event="oninput"
+                               @onkeyup="ManejarTecla" />
+                        <button class="btn btn-outline-secondary" @onclick="Buscar">
+                            <span class="bi bi-search"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @if (estudiantes is null)
+            {
+                <p>Cargando...</p>
+            }
+            else
+            {
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>EstudianteId</th>
+                            <th>Nombres</th>
+                            <th>Dirección</th>
+                            <th>Email</th>
+                            <th>Fecha Nacimiento</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var estudiante in estudiantes)
+                        {
+                            <tr>
+                                <td>@estudiante.EstudianteId</td>
+                                <td>@estudiante.Nombres</td>
+                                <td>@estudiante.Direccion</td>
+                                <td>@estudiante.Email</td>
+                                <td>@estudiante.FechaNacimiento.ToShortDateString()</td>
+                                <td>
+                                    <a href="@($"/Estudiante/edit/{estudiante.EstudianteId}")" class="btn btn-sm btn-outline-primary"><span class="bi bi-pencil-square"></span> Editar</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <p class="text-muted">Cantidad: @estudiantes.Count</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Estudiantes>? estudiantes;
+    private string criterioSeleccionado = "";
+    private string textoBusqueda = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        estudiantes = await EstudiantesService.GetList(e => true);
+    }
+
+    private async Task ManejarTecla(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Buscar();
+        }
+    }
+
+    private async Task Buscar()
+    {
+        if (string.IsNullOrWhiteSpace(textoBusqueda) || string.IsNullOrEmpty(criterioSeleccionado))
+        {
+            estudiantes = await EstudiantesService.GetList(e => true);
+            return;
+        }
+
+        switch (criterioSeleccionado)
+        {
+            case "estudianteId":
+                if (int.TryParse(textoBusqueda, out int idBuscado))
+                {
+                    estudiantes = await EstudiantesService.GetList(e => e.EstudianteId == idBuscado);
+                }
+                else
+                {
+                    estudiantes = new List<Estudiantes>();
+                }
+                break;
+
+            case "nombres":
+                estudiantes = await EstudiantesService.GetList(e => e.Nombres.Contains(textoBusqueda));
+                break;
+
+            case "email":
+                estudiantes = await EstudiantesService.GetList(e => e.Email.Contains(textoBusqueda));
+                break;
+
+            default:
+                estudiantes = await EstudiantesService.GetList(e => true);
+                break;
+        }
+    }
+}
