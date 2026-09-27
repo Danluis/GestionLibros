@@ -2,6 +2,7 @@ using GestionLibros.Components;
 using GestionLibros.Context;
 using Microsoft.EntityFrameworkCore;
 using GestionLibros.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -17,10 +18,9 @@ builder.Services.AddDbContextFactory<Contexto>(Options =>
 });
 
 //Inteccion del service
-
+builder.Services.AddBlazorBootstrap();
 builder.Services.AddScoped<LibrosService>();
 builder.Services.AddScoped<EstudiantesService>();
-builder.Services.AddScoped<ToastService>();
 
 var app = builder.Build();
 

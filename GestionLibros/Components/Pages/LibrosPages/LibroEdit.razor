@@ -5,6 +5,7 @@
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 
+@*HTML*@
 <PageTitle>Modificar Libro</PageTitle>
 
 <EditForm Model="libro" OnValidSubmit="@Modificar">
@@ -17,23 +18,27 @@
             </div>
 
             <div class="card-body">
+                @*LibroId*@
                 <div class="mb-3">
                     <label class="form-label"><strong>LibroId</strong></label>
                     <InputNumber class="form-control" @bind-Value="libro.LibroId" readonly />
                 </div>
 
+                @*Título*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Título</strong></label>
                     <InputText class="form-control" @bind-Value="libro.Titulo" />
                     <ValidationMessage For="@(() => libro.Titulo)" />
                 </div>
 
+                @*Autor*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Autor</strong></label>
                     <InputText class="form-control" @bind-Value="libro.Autor" />
                     <ValidationMessage For="@(() => libro.Autor)" />
                 </div>
 
+                @*Año de Publicación*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Año de Publicación</strong></label>
                     <InputNumber class="form-control" @bind-Value="libro.AnoPublicacion" />
@@ -41,6 +46,7 @@
                 </div>
             </div>
 
+            @*footer*@
             <div class="card-footer text-center">
                 <a href="/Libros/index" class="btn btn-secondary">
                     <span class="bi bi-arrow-left"></span> Volver
@@ -61,33 +67,21 @@
     public int LibroId { get; set; }
 
     private Libros libro { get; set; } = new Libros();
-    private bool libroNoEncontrado = false;
-
-
 
     protected override async Task OnInitializedAsync()
     {
-        var LibroEncontrado = await librosService.Buscar(LibroId);
-        if (LibroEncontrado != null)
+        var libroEncontrado = await librosService.Buscar(LibroId);
+        if (libroEncontrado != null)
         {
-            libro = LibroEncontrado;
+            libro = libroEncontrado;
         }
         else
         {
-            libroNoEncontrado = true;
-        }
-    }
-
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && libroNoEncontrado)
-        {
-            await toastService.Error("Error", "Libro no encontrado");
-            await Task.Delay(4000);
+            toastService.ShowError("Libro no encontrado");
             NavigationManager.NavigateTo("/Libros/index");
         }
     }
+
     private async Task Modificar()
     {
         try
@@ -96,18 +90,17 @@
 
             if (actualizado)
             {
-                await toastService.Success("Éxito", "Libro modificado correctamente");
-                await Task.Delay(4000);
+                toastService.ShowSuccess("Libro modificado correctamente");
                 NavigationManager.NavigateTo("/Libros/index");
             }
             else
             {
-                await toastService.Error("Error", "No se pudo modificar el libro");
+                toastService.ShowError("No se pudo modificar el libro");
             }
         }
         catch (InvalidOperationException ex)
         {
-            await toastService.Error("Error", ex.Message);
+            toastService.ShowError(ex.Message);
         }
     }
 
@@ -121,13 +114,12 @@
 
             if (eliminado)
             {
-                await toastService.Success("Éxito", "Libro eliminado correctamente");
-                await Task.Delay(4000);
+                toastService.ShowSuccess("Libro eliminado correctamente");
                 NavigationManager.NavigateTo("/Libros/index");
             }
             else
             {
-                await toastService.Error("Error", "No se pudo eliminar el libro");
+                toastService.ShowError("No se pudo eliminar el libro");
             }
         }
     }

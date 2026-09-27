@@ -5,7 +5,6 @@
 @rendermode InteractiveServer
 
 @*HTML*@
-
 <PageTitle>Create</PageTitle>
 <EditForm Model="libro" OnValidSubmit="@Guardar">
     <DataAnnotationsValidator />
@@ -17,22 +16,26 @@
             </div>
 
             <div class="card-body">
+                @*LibroId*@
                 <div class="mb-3">
                     <label class="form-label"><strong>LibroId</strong></label>
                     <InputNumber class="form-control" @bind-Value="libro.LibroId" readonly />
                 </div>
+                @*Título*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Título</strong></label>
                     <InputText class="form-control" @bind-Value="libro.Titulo" />
                     <ValidationMessage For="@(() => libro.Titulo)" />
                 </div>
 
+                @*Autor*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Autor</strong></label>
                     <InputText class="form-control" @bind-Value="libro.Autor" />
                     <ValidationMessage For="@(() => libro.Autor)" />
                 </div>
 
+                @*Año de Publicación*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Año de Publicación</strong></label>
                     <InputNumber class="form-control" @bind-Value="libro.AnoPublicacion" />
@@ -40,6 +43,7 @@
                 </div>
             </div>
 
+            @*footer*@
             <div class="card-footer text-center mt-2">
                 <a href="/Libros/index" class="btn btn-secondary"> <span class="bi bi-arrow-left"> Volver</span></a>
                 <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
@@ -50,7 +54,6 @@
 </EditForm>
 
 @code {
-
     private Libros libro { get; set; } = new Libros
     {
         AnoPublicacion = DateTime.Now.Year
@@ -64,18 +67,17 @@
 
             if (creado)
             {
-                await toastService.Success("Libro creado correctamente", "El libro ha sido creado exitosamente.");
-                await Task.Delay(4000);
+                toastService.ShowSuccess("El libro ha sido creado exitosamente.");
                 NavigationManager.NavigateTo("/Libros/index");
             }
             else
             {
-                await toastService.Error("Error al crear el libro", "No se pudo crear el libro.");
+                toastService.ShowError("No se pudo crear el libro.");
             }
         }
         catch (InvalidOperationException ex)
         {
-            await toastService.Error("Error al crear el libro", ex.Message);
+            toastService.ShowError(ex.Message);
         }
     }
 }
