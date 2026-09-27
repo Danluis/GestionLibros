@@ -2,7 +2,6 @@
 @inject LibrosService librosService
 @inject ToastService toastService
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JS
 @rendermode InteractiveServer
 
 @*HTML*@
@@ -62,11 +61,31 @@
     </div>
 </EditForm>
 
+@*Modal de confirmación*@
+<div class="modal fade @(mostrarModal ? "show d-block" : "")" tabindex="-1" style="@(mostrarModal ? "background-color: rgba(0,0,0,0.5);" : "")">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" @onclick="CerrarModal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de eliminar este libro? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                <button type="button" class="btn btn-danger" @onclick="ConfirmarEliminar">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @code {
     [Parameter]
     public int LibroId { get; set; }
 
     private Libros libro { get; set; } = new Libros();
+    private bool mostrarModal = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -104,23 +123,30 @@
         }
     }
 
-    private async Task Eliminar()
+    private void Eliminar()
     {
-        bool confirmado = await JS.InvokeAsync<bool>("confirm", "¿Está seguro de eliminar este libro?");
+        mostrarModal = true;
+    }
 
-        if (confirmado)
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+    }
+
+    private async Task ConfirmarEliminar()
+    {
+        mostrarModal = false;
+
+        var eliminado = await librosService.Eliminar(libro.LibroId);
+
+        if (eliminado)
         {
-            var eliminado = await librosService.Eliminar(libro.LibroId);
-
-            if (eliminado)
-            {
-                toastService.ShowSuccess("Libro eliminado correctamente");
-                NavigationManager.NavigateTo("/Libros/index");
-            }
-            else
-            {
-                toastService.ShowError("No se pudo eliminar el libro");
-            }
+            toastService.ShowSuccess("Libro eliminado correctamente");
+            NavigationManager.NavigateTo("/Libros/index");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo eliminar el libro");
         }
     }
 }
