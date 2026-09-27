@@ -1,4 +1,5 @@
 ﻿@page "/Estudiantes/Index"
+@using Microsoft.AspNetCore.Components.QuickGrid
 @inject EstudiantesService EstudiantesService
 @rendermode InteractiveServer
 
@@ -13,7 +14,9 @@
             </a>
         </div>
         <div class="card-body">
+            @*labels*@
             <div class="row mb-3">
+                @*Filtrar por*@
                 <div class="col-md-4">
                     <label class="form-label"><span class="bi bi-funnel"></span> Filtrar por</label>
                     <select class="form-select" @bind="criterioSeleccionado">
@@ -23,6 +26,7 @@
                         <option value="email">Email</option>
                     </select>
                 </div>
+                @*Búsqueda*@
                 <div class="col-md-6">
                     <label class="form-label">Búsqueda</label>
                     <div class="input-group">
@@ -36,39 +40,28 @@
                 </div>
             </div>
 
+            @*tabla*@
             @if (estudiantes is null)
             {
                 <p>Cargando...</p>
             }
             else
             {
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>EstudianteId</th>
-                            <th>Nombres</th>
-                            <th>Dirección</th>
-                            <th>Email</th>
-                            <th>Fecha Nacimiento</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var estudiante in estudiantes)
-                        {
-                            <tr>
-                                <td>@estudiante.EstudianteId</td>
-                                <td>@estudiante.Nombres</td>
-                                <td>@estudiante.Direccion</td>
-                                <td>@estudiante.Email</td>
-                                <td>@estudiante.FechaNacimiento.ToShortDateString()</td>
-                                <td>
-                                    <a href="@($"/Estudiante/edit/{estudiante.EstudianteId}")" class="btn btn-sm btn-outline-primary"><span class="bi bi-pencil-square"></span> Editar</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                <QuickGrid Items="@estudiantes.AsQueryable()" Pagination="@paginacion" Class="table table-striped table-hover">
+                    <PropertyColumn Property="@(e => e.EstudianteId)" Title="EstudianteId" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.Nombres)" Title="Nombres" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.Direccion)" Title="Dirección" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.Email)" Title="Email" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.FechaNacimiento)" Title="Fecha Nacimiento" Format="dd/MM/yyyy" Sortable="true" />
+                    <TemplateColumn Title="">
+                        <a href="@($"/Estudiante/edit/{context.EstudianteId}")" class="btn btn-sm btn-outline-primary">
+                            <span class="bi bi-pencil-square"></span> Editar
+                        </a>
+                    </TemplateColumn>
+                </QuickGrid>
+
+                <Paginator State="@paginacion" />
+
                 <p class="text-muted">Cantidad: @estudiantes.Count</p>
             }
         </div>
@@ -79,6 +72,7 @@
     private List<Estudiantes>? estudiantes;
     private string criterioSeleccionado = "";
     private string textoBusqueda = "";
+    private PaginationState paginacion = new PaginationState { ItemsPerPage = 5 };
 
     protected override async Task OnInitializedAsync()
     {
