@@ -1,0 +1,89 @@
+﻿@page "/Prestamo/create"
+@inject PrestamosService prestamosService
+@inject EstudiantesService estudiantesService
+@inject LibrosService librosService
+@inject ToastService toastService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+@*HTML*@
+<PageTitle>Crear Préstamo</PageTitle>
+<EditForm Model="prestamo" OnValidSubmit="@Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5>Crear Préstamo</h5>
+            </div>
+
+            <div class="card-body">
+                @*Estudiante*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Estudiante</strong></label>
+                    <InputSelect class="form-control form-select" @bind-Value="prestamo.EstudianteId">
+                        <option value="0" selected disabled>Elija una opción</option>
+                        @foreach (var estudiante in listaEstudiantes)
+                        {
+                            <option value="@estudiante.EstudianteId">@estudiante.Nombres</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => prestamo.EstudianteId)" />
+                </div>
+
+                @*Libro*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Libro</strong></label>
+                    <InputSelect class="form-control form-select" @bind-Value="prestamo.LibroId">
+                        <option value="0" selected disabled>Elija una opción</option>
+                        @foreach (var libro in listaLibros)
+                        {
+                            <option value="@libro.LibroId">@libro.Titulo</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => prestamo.LibroId)" />
+                </div>
+            </div>
+
+            @*footer*@
+            <div class="card-footer text-center mt-2">
+                <a href="/Prestamos/index" class="btn btn-secondary"> <span class="bi bi-arrow-left"> Volver</span></a>
+                <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private Prestamos prestamo { get; set; } = new Prestamos();
+    private List<Estudiantes> listaEstudiantes { get; set; } = new List<Estudiantes>();
+    private List<Libros> listaLibros { get; set; } = new List<Libros>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaEstudiantes = await estudiantesService.GetList(e => true);
+        listaLibros = await librosService.GetList(l => true);
+    }
+
+    private async Task Guardar()
+    {
+        try
+        {
+            var creado = await prestamosService.Guardar(prestamo);
+
+            if (creado)
+            {
+                toastService.ShowSuccess("Préstamo registrado exitosamente.");
+                NavigationManager.NavigateTo("/Prestamos/index");
+            }
+            else
+            {
+                toastService.ShowError("No se pudo registrar el préstamo.");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            toastService.ShowError(ex.Message);
+        }
+    }
+}

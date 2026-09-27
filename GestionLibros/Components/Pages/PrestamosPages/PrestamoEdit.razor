@@ -1,0 +1,149 @@
+﻿@page "/Prestamo/edit/{PrestamoId:int}"
+@inject PrestamosService prestamosService
+@inject ToastService toastService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+@*HTML*@
+<PageTitle>Modificar Préstamo</PageTitle>
+
+<EditForm Model="prestamo" OnValidSubmit="@Modificar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h5>Modificar Préstamo</h5>
+            </div>
+
+            <div class="card-body">
+                @*Estudiante*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Estudiante</strong></label>
+                    <input class="form-control" value="@prestamo.Estudiante?.Nombres" readonly />
+                </div>
+
+                @*Libro*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Libro</strong></label>
+                    <input class="form-control" value="@prestamo.Libro?.Titulo" readonly />
+                </div>
+
+                @*Fecha de Préstamo*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de Préstamo</strong></label>
+                    <input class="form-control" value="@prestamo.FechaPrestamo.ToShortDateString()" readonly />
+                </div>
+
+                @*Activo*@
+                <div class="mb-3 form-check">
+                    <InputCheckbox class="form-check-input" @bind-Value="prestamo.Activo" id="checkActivo" />
+                    <label class="form-check-label" for="checkActivo"><strong>Préstamo activo (sin devolver)</strong></label>
+                </div>
+            </div>
+
+            @*footer*@
+            <div class="card-footer text-center">
+                <a href="/Prestamos/index" class="btn btn-secondary">
+                    <span class="bi bi-arrow-left"></span> Volver
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <span class="bi bi-floppy"></span> Modificar
+                </button>
+                <button type="button" class="btn btn-danger" @onclick="Eliminar">
+                    <span class="bi bi-trash"></span> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@*Modal de confirmación*@
+<div class="modal fade @(mostrarModal ? "show d-block" : "")" tabindex="-1" style="@(mostrarModal ? "background-color: rgba(0,0,0,0.5);" : "")">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" @onclick="CerrarModal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de eliminar este préstamo? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                <button type="button" class="btn btn-danger" @onclick="ConfirmarEliminar">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int PrestamoId { get; set; }
+
+    private Prestamos prestamo { get; set; } = new Prestamos();
+    private bool mostrarModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var prestamoEncontrado = await prestamosService.Buscar(PrestamoId);
+        if (prestamoEncontrado != null)
+        {
+            prestamo = prestamoEncontrado;
+        }
+        else
+        {
+            toastService.ShowError("Préstamo no encontrado");
+            NavigationManager.NavigateTo("/Prestamos/index");
+        }
+    }
+
+    private async Task Modificar()
+    {
+        try
+        {
+            var actualizado = await prestamosService.Guardar(prestamo);
+
+            if (actualizado)
+            {
+                toastService.ShowSuccess("Préstamo modificado correctamente");
+                NavigationManager.NavigateTo("/Prestamos/index");
+            }
+            else
+            {
+                toastService.ShowError("No se pudo modificar el préstamo");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            toastService.ShowError(ex.Message);
+        }
+    }
+
+    private void Eliminar()
+    {
+        mostrarModal = true;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+    }
+
+    private async Task ConfirmarEliminar()
+    {
+        mostrarModal = false;
+
+        var eliminado = await prestamosService.Eliminar(prestamo.PrestamoId);
+
+        if (eliminado)
+        {
+            toastService.ShowSuccess("Préstamo eliminado correctamente");
+            NavigationManager.NavigateTo("/Prestamos/index");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo eliminar el préstamo");
+        }
+    }
+}

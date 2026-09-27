@@ -1,0 +1,133 @@
+﻿@page "/Prestamos/Index"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject PrestamosService PrestamosService
+@rendermode InteractiveServer
+
+<PageTitle>Consulta de Préstamos</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Consulta de Préstamos</h5>
+            <a href="/Prestamo/create" class="btn btn-primary">
+                <span class="bi bi-plus-circle"></span> Nuevo Préstamo
+            </a>
+        </div>
+        <div class="card-body">
+            @*labels*@
+            <div class="row mb-3">
+                @*Filtrar por*@
+                <div class="col-md-4">
+                    <label class="form-label"><span class="bi bi-funnel"></span> Filtrar por</label>
+                    <select class="form-select" @bind="criterioSeleccionado">
+                        <option value="">Elija una opción</option>
+                        <option value="estudiante">Estudiante</option>
+                        <option value="libro">Libro</option>
+                        <option value="activos">Solo activos</option>
+                    </select>
+                </div>
+                @*Búsqueda*@
+                <div class="col-md-6">
+                    <label class="form-label">Búsqueda</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Buscar"
+                               @bind="textoBusqueda" @bind:event="oninput"
+                               @onkeyup="ManejarTecla" />
+                        <button class="btn btn-outline-secondary" @onclick="Buscar">
+                            <span class="bi bi-search"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @*tabla*@
+            @if (prestamos is null)
+            {
+                <p>Cargando...</p>
+            }
+            else
+            {
+                <QuickGrid Items="@prestamos.AsQueryable()" Pagination="@paginacion" Class="table table-striped table-hover">
+                    <PropertyColumn Property="@(p => p.PrestamoId)" Title="PrestamoId" Sortable="true" />
+                    <TemplateColumn Title="Estudiante" Sortable="true" SortBy="@ordenPorEstudiante">
+                        @context.Estudiante?.Nombres
+                    </TemplateColumn>
+                    <TemplateColumn Title="Libro" Sortable="true" SortBy="@ordenPorLibro">
+                        @context.Libro?.Titulo
+                    </TemplateColumn>
+                    <PropertyColumn Property="@(p => p.FechaPrestamo)" Title="Fecha Préstamo" Format="dd/MM/yyyy" Sortable="true" />
+                    <TemplateColumn Title="Estado">
+                        @if (context.Activo)
+                        {
+                            <span class="badge bg-warning text-dark">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Devuelto</span>
+                        }
+                    </TemplateColumn>
+                    <TemplateColumn Title="">
+                        <a href="@($"/Prestamo/edit/{context.PrestamoId}")" class="btn btn-sm btn-outline-primary">
+                            <span class="bi bi-pencil-square"></span> Editar
+                        </a>
+                    </TemplateColumn>
+                </QuickGrid>
+
+                <Paginator State="@paginacion" />
+
+                <p class="text-muted">Cantidad: @prestamos.Count</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Prestamos>? prestamos;
+    private string criterioSeleccionado = "";
+    private string textoBusqueda = "";
+    private PaginationState paginacion = new PaginationState { ItemsPerPage = 5 };
+
+    private GridSort<Prestamos> ordenPorEstudiante = GridSort<Prestamos>.ByAscending(p => p.Estudiante!.Nombres);
+    private GridSort<Prestamos> ordenPorLibro = GridSort<Prestamos>.ByAscending(p => p.Libro!.Titulo);
+
+    protected override async Task OnInitializedAsync()
+    {
+        prestamos = await PrestamosService.GetList(p => true);
+    }
+
+    private async Task ManejarTecla(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Buscar();
+        }
+    }
+
+    private async Task Buscar()
+    {
+        if (string.IsNullOrWhiteSpace(textoBusqueda) && criterioSeleccionado != "activos")
+        {
+            prestamos = await PrestamosService.GetList(p => true);
+            return;
+        }
+
+        switch (criterioSeleccionado)
+        {
+            case "estudiante":
+                prestamos = await PrestamosService.GetList(p => p.Estudiante!.Nombres.Contains(textoBusqueda));
+                break;
+
+            case "libro":
+                prestamos = await PrestamosService.GetList(p => p.Libro!.Titulo.Contains(textoBusqueda));
+                break;
+
+            case "activos":
+                prestamos = await PrestamosService.GetList(p => p.Activo);
+                break;
+
+            default:
+                prestamos = await PrestamosService.GetList(p => true);
+                break;
+        }
+    }
+}
