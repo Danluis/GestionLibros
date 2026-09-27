@@ -1,6 +1,7 @@
 ﻿@page "/Libros/Index"
 @inject LibrosService LibrosService
 @rendermode InteractiveServer
+
 <PageTitle>Consulta de Libros</PageTitle>
 
 <div class="container mt-4">
@@ -12,7 +13,9 @@
             </a>
         </div>
         <div class="card-body">
+            @*labels*@
             <div class="row mb-3">
+                @*Filtrar por*@
                 <div class="col-md-4">
                     <label class="form-label"><span class="bi bi-funnel"></span> Filtrar por</label>
                     <select class="form-select" @bind="criterioSeleccionado">
@@ -23,6 +26,7 @@
                         <option value="anio">Año de Publicación</option>
                     </select>
                 </div>
+                @*Búsqueda*@
                 <div class="col-md-6">
                     <label class="form-label">Búsqueda</label>
                     <div class="input-group">
@@ -36,6 +40,7 @@
                 </div>
             </div>
 
+            @*tabla*@
             @if (libros is null)
             {
                 <p>Cargando...</p>
@@ -93,7 +98,6 @@
 
     private async Task Buscar()
     {
-
         if (string.IsNullOrWhiteSpace(textoBusqueda) || string.IsNullOrEmpty(criterioSeleccionado))
         {
             libros = await LibrosService.GetList(l => true);
@@ -136,6 +140,5 @@
                 libros = await LibrosService.GetList(l => true);
                 break;
         }
-
     }
 }

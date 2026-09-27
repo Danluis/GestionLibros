@@ -5,6 +5,7 @@
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 
+@*HTML*@
 <PageTitle>Modificar Estudiante</PageTitle>
 
 <EditForm Model="estudiante" OnValidSubmit="@Modificar">
@@ -17,29 +18,34 @@
             </div>
 
             <div class="card-body">
+                @*EstudianteId*@
                 <div class="mb-3">
                     <label class="form-label"><strong>EstudianteId</strong></label>
                     <InputNumber class="form-control" @bind-Value="estudiante.EstudianteId" readonly />
                 </div>
 
+                @*Nombres*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Nombres</strong></label>
                     <InputText class="form-control" @bind-Value="estudiante.Nombres" />
                     <ValidationMessage For="@(() => estudiante.Nombres)" />
                 </div>
 
+                @*Dirección*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Dirección</strong></label>
                     <InputText class="form-control" @bind-Value="estudiante.Direccion" />
                     <ValidationMessage For="@(() => estudiante.Direccion)" />
                 </div>
 
+                @*Email*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Email</strong></label>
                     <InputText class="form-control" @bind-Value="estudiante.Email" />
                     <ValidationMessage For="@(() => estudiante.Email)" />
                 </div>
 
+                @*Fecha de Nacimiento*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Fecha de Nacimiento</strong></label>
                     <InputDate class="form-control" @bind-Value="estudiante.FechaNacimiento" />
@@ -47,6 +53,7 @@
                 </div>
             </div>
 
+            @*footer*@
             <div class="card-footer text-center">
                 <a href="/Estudiantes/index" class="btn btn-secondary">
                     <span class="bi bi-arrow-left"></span> Volver
@@ -67,7 +74,6 @@
     public int EstudianteId { get; set; }
 
     private Estudiantes estudiante { get; set; } = new Estudiantes();
-    private bool estudianteNoEncontrado = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -78,16 +84,7 @@
         }
         else
         {
-            estudianteNoEncontrado = true;
-        }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && estudianteNoEncontrado)
-        {
-            await toastService.Error("Error", "Estudiante no encontrado");
-            await Task.Delay(4000);
+            toastService.ShowError("Estudiante no encontrado");
             NavigationManager.NavigateTo("/Estudiantes/index");
         }
     }
@@ -100,18 +97,17 @@
 
             if (actualizado)
             {
-                await toastService.Success("Éxito", "Estudiante modificado correctamente");
-                await Task.Delay(4000);
+                toastService.ShowSuccess("Estudiante modificado correctamente");
                 NavigationManager.NavigateTo("/Estudiantes/index");
             }
             else
             {
-                await toastService.Error("Error", "No se pudo modificar el estudiante");
+                toastService.ShowError("No se pudo modificar el estudiante");
             }
         }
         catch (InvalidOperationException ex)
         {
-            await toastService.Error("Error", ex.Message);
+            toastService.ShowError(ex.Message);
         }
     }
 
@@ -125,13 +121,12 @@
 
             if (eliminado)
             {
-                await toastService.Success("Éxito", "Estudiante eliminado correctamente");
-                await Task.Delay(4000);
+                toastService.ShowSuccess("Estudiante eliminado correctamente");
                 NavigationManager.NavigateTo("/Estudiantes/index");
             }
             else
             {
-                await toastService.Error("Error", "No se pudo eliminar el estudiante");
+                toastService.ShowError("No se pudo eliminar el estudiante");
             }
         }
     }
