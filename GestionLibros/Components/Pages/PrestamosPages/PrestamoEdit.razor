@@ -1,53 +1,50 @@
-﻿@page "/Libro/edit/{LibroId:int}"
-@inject LibrosService librosService
+﻿@page "/Prestamo/edit/{PrestamoId:int}"
+@inject PrestamosService prestamosService
 @inject ToastService toastService
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
 @*HTML*@
-<PageTitle>Modificar Libro</PageTitle>
+<PageTitle>Modificar Préstamo</PageTitle>
 
-<EditForm Model="libro" OnValidSubmit="@Modificar">
+<EditForm Model="prestamo" OnValidSubmit="@Modificar">
     <DataAnnotationsValidator />
 
     <div class="container">
         <div class="card shadow-lg">
             <div class="card-header">
-                <h5>Modificar Libro</h5>
+                <h5>Modificar Préstamo</h5>
             </div>
 
             <div class="card-body">
-                @*LibroId*@
+                @*Estudiante*@
                 <div class="mb-3">
-                    <label class="form-label"><strong>LibroId</strong></label>
-                    <InputNumber class="form-control" @bind-Value="libro.LibroId" readonly />
+                    <label class="form-label"><strong>Estudiante</strong></label>
+                    <input class="form-control" value="@prestamo.Estudiante?.Nombres" readonly />
                 </div>
 
-                @*Título*@
+                @*Libro*@
                 <div class="mb-3">
-                    <label class="form-label"><strong>Título</strong></label>
-                    <InputText class="form-control" @bind-Value="libro.Titulo" />
-                    <ValidationMessage For="@(() => libro.Titulo)" />
+                    <label class="form-label"><strong>Libro</strong></label>
+                    <input class="form-control" value="@prestamo.Libro?.Titulo" readonly />
                 </div>
 
-                @*Autor*@
+                @*Fecha de Préstamo*@
                 <div class="mb-3">
-                    <label class="form-label"><strong>Autor</strong></label>
-                    <InputText class="form-control" @bind-Value="libro.Autor" />
-                    <ValidationMessage For="@(() => libro.Autor)" />
+                    <label class="form-label"><strong>Fecha de Préstamo</strong></label>
+                    <input class="form-control" value="@prestamo.FechaPrestamo.ToShortDateString()" readonly />
                 </div>
 
-                @*Año de Publicación*@
-                <div class="mb-3">
-                    <label class="form-label"><strong>Año de Publicación</strong></label>
-                    <InputNumber class="form-control" @bind-Value="libro.AnoPublicacion" />
-                    <ValidationMessage For="@(() => libro.AnoPublicacion)" />
+                @*Activo*@
+                <div class="mb-3 form-check">
+                    <InputCheckbox class="form-check-input" @bind-Value="prestamo.Activo" id="checkActivo" />
+                    <label class="form-check-label" for="checkActivo"><strong>Préstamo activo (sin devolver)</strong></label>
                 </div>
             </div>
 
             @*footer*@
             <div class="card-footer text-center">
-                <a href="/Libros/index" class="btn btn-secondary">
+                <a href="/Prestamos/index" class="btn btn-secondary">
                     <span class="bi bi-arrow-left"></span> Volver
                 </a>
                 <button type="submit" class="btn btn-primary">
@@ -70,7 +67,7 @@
                 <button type="button" class="btn-close" @onclick="CerrarModal"></button>
             </div>
             <div class="modal-body">
-                <p>¿Está seguro de eliminar este libro? Esta acción no se puede deshacer.</p>
+                <p>¿Está seguro de eliminar este préstamo? Esta acción no se puede deshacer.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
@@ -82,22 +79,22 @@
 
 @code {
     [Parameter]
-    public int LibroId { get; set; }
+    public int PrestamoId { get; set; }
 
-    private Libros libro { get; set; } = new Libros();
+    private Prestamos prestamo { get; set; } = new Prestamos();
     private bool mostrarModal = false;
 
     protected override async Task OnInitializedAsync()
     {
-        var libroEncontrado = await librosService.Buscar(LibroId);
-        if (libroEncontrado != null)
+        var prestamoEncontrado = await prestamosService.Buscar(PrestamoId);
+        if (prestamoEncontrado != null)
         {
-            libro = libroEncontrado;
+            prestamo = prestamoEncontrado;
         }
         else
         {
-            toastService.ShowError("Libro no encontrado");
-            NavigationManager.NavigateTo("/Libros/index");
+            toastService.ShowError("Préstamo no encontrado");
+            NavigationManager.NavigateTo("/Prestamos/index");
         }
     }
 
@@ -105,16 +102,16 @@
     {
         try
         {
-            var actualizado = await librosService.Guardar(libro);
+            var actualizado = await prestamosService.Guardar(prestamo);
 
             if (actualizado)
             {
-                toastService.ShowSuccess("Libro modificado correctamente");
-                NavigationManager.NavigateTo("/Libros/index");
+                toastService.ShowSuccess("Préstamo modificado correctamente");
+                NavigationManager.NavigateTo("/Prestamos/index");
             }
             else
             {
-                toastService.ShowError("No se pudo modificar el libro");
+                toastService.ShowError("No se pudo modificar el préstamo");
             }
         }
         catch (InvalidOperationException ex)
@@ -137,16 +134,16 @@
     {
         mostrarModal = false;
 
-        var eliminado = await librosService.Eliminar(libro.LibroId);
+        var eliminado = await prestamosService.Eliminar(prestamo.PrestamoId);
 
         if (eliminado)
         {
-            toastService.ShowSuccess("Libro eliminado correctamente");
-            NavigationManager.NavigateTo("/Libros/index");
+            toastService.ShowSuccess("Préstamo eliminado correctamente");
+            NavigationManager.NavigateTo("/Prestamos/index");
         }
         else
         {
-            toastService.ShowError("No se pudo eliminar el libro");
+            toastService.ShowError("No se pudo eliminar el préstamo");
         }
     }
 }
