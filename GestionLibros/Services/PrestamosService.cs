@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace GestionLibros.Services;
+
 public class PrestamosService(
     IDbContextFactory<Contexto> DbFactory
 ) : Aplicada1.Core.IService<Prestamos, int>

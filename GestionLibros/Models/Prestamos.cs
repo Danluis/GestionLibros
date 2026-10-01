@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GestionLibros.Models;
+
 public class Prestamos
 {
     [Key]
