@@ -53,7 +53,7 @@
                     <PropertyColumn Property="@(e => e.Direccion)" Title="Dirección" Sortable="true" />
                     <PropertyColumn Property="@(e => e.Email)" Title="Email" Sortable="true" />
                     <PropertyColumn Property="@(e => e.FechaNacimiento)" Title="Fecha Nacimiento" Format="dd/MM/yyyy" Sortable="true" />
-                    <TemplateColumn Title="">
+                    <TemplateColumn Title="Opciones">
                         <a href="@($"/Estudiante/edit/{context.EstudianteId}")" class="btn btn-sm btn-outline-primary">
                             <span class="bi bi-pencil-square"></span> Editar
                         </a>
