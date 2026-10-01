@@ -53,7 +53,7 @@
                     <PropertyColumn Property="@(l => l.Titulo)" Title="Título" Sortable="true" />
                     <PropertyColumn Property="@(l => l.Autor)" Title="Autor" Sortable="true" />
                     <PropertyColumn Property="@(l => l.AnoPublicacion)" Title="Año Publicación" Sortable="true" />
-                    <TemplateColumn Title="">
+                    <TemplateColumn Title="Opciones">
                         <a href="@($"/Libro/edit/{context.LibroId}")" class="btn btn-sm btn-outline-primary">
                             <span class="bi bi-pencil-square"></span> Editar
                         </a>
