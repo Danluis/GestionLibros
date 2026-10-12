@@ -83,10 +83,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var libroEncontrado = await librosService.Buscar(LibroId);
-        if (libroEncontrado != null)
+        var resultado = await librosService.Buscar(LibroId);
+        if (resultado.IsSuccess && resultado.Value is not null)
         {
-            libro = libroEncontrado;
+            libro = resultado.Value;
         }
         else
         {
@@ -97,24 +97,18 @@
 
     private async Task Modificar()
     {
-        try
-        {
-            var actualizado = await librosService.Guardar(libro);
+        var resultado = await librosService.Guardar(libro);
 
-            if (actualizado)
-            {
-                toastService.ShowSuccess("Libro modificado correctamente");
-                NavigationManager.NavigateTo("/Libros/index");
-            }
-            else
-            {
-                toastService.ShowError("No se pudo modificar el libro");
-            }
-        }
-        catch (InvalidOperationException ex)
+        resultado.OnSuccess(() =>
         {
-            toastService.ShowError(ex.Message);
-        }
+            toastService.ShowSuccess("Libro modificado correctamente");
+            NavigationManager.NavigateTo("/Libros/index");
+        });
+
+        resultado.OnFailure(() =>
+        {
+            toastService.ShowError(resultado.Error.Description);
+        });
     }
 
     private void Eliminar()
@@ -131,16 +125,17 @@
     {
         mostrarModal = false;
 
-        var eliminado = await librosService.Eliminar(libro.LibroId);
+        var resultado = await librosService.Eliminar(libro.LibroId);
 
-        if (eliminado)
+        resultado.OnSuccess(() =>
         {
             toastService.ShowSuccess("Libro eliminado correctamente");
             NavigationManager.NavigateTo("/Libros/index");
-        }
-        else
+        });
+
+        resultado.OnFailure(() =>
         {
-            toastService.ShowError("No se pudo eliminar el libro");
-        }
+            toastService.ShowError(resultado.Error.Description);
+        });
     }
 }

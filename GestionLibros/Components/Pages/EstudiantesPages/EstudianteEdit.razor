@@ -90,10 +90,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var encontrado = await estudiantesService.Buscar(EstudianteId);
-        if (encontrado != null)
+        var resultado = await estudiantesService.Buscar(EstudianteId);
+        if (resultado.IsSuccess && resultado.Value is not null)
         {
-            estudiante = encontrado;
+            estudiante = resultado.Value;
         }
         else
         {
@@ -104,24 +104,18 @@
 
     private async Task Modificar()
     {
-        try
-        {
-            var actualizado = await estudiantesService.Guardar(estudiante);
+        var resultado = await estudiantesService.Guardar(estudiante);
 
-            if (actualizado)
-            {
-                toastService.ShowSuccess("Estudiante modificado correctamente");
-                NavigationManager.NavigateTo("/Estudiantes/index");
-            }
-            else
-            {
-                toastService.ShowError("No se pudo modificar el estudiante");
-            }
-        }
-        catch (InvalidOperationException ex)
+        resultado.OnSuccess(() =>
         {
-            toastService.ShowError(ex.Message);
-        }
+            toastService.ShowSuccess("Estudiante modificado correctamente");
+            NavigationManager.NavigateTo("/Estudiantes/index");
+        });
+
+        resultado.OnFailure(() =>
+        {
+            toastService.ShowError(resultado.Error.Description);
+        });
     }
 
     private void Eliminar()
@@ -138,16 +132,17 @@
     {
         mostrarModal = false;
 
-        var eliminado = await estudiantesService.Eliminar(estudiante.EstudianteId);
+        var resultado = await estudiantesService.Eliminar(estudiante.EstudianteId);
 
-        if (eliminado)
+        resultado.OnSuccess(() =>
         {
             toastService.ShowSuccess("Estudiante eliminado correctamente");
             NavigationManager.NavigateTo("/Estudiantes/index");
-        }
-        else
+        });
+
+        resultado.OnFailure(() =>
         {
-            toastService.ShowError("No se pudo eliminar el estudiante");
-        }
+            toastService.ShowError(resultado.Error.Description);
+        });
     }
 }

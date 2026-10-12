@@ -22,6 +22,7 @@ builder.Services.AddBlazorBootstrap();
 builder.Services.AddScoped<PrestamosService>();
 builder.Services.AddScoped<LibrosService>();
 builder.Services.AddScoped<EstudiantesService>();
+builder.Services.AddScoped<DevolucionesService>();
 
 var app = builder.Build();
 
