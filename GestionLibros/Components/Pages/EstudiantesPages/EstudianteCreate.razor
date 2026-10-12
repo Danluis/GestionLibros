@@ -63,23 +63,17 @@
 
     private async Task Guardar()
     {
-        try
-        {
-            var creado = await estudiantesService.Guardar(estudiante);
+        var resultado = await estudiantesService.Guardar(estudiante);
 
-            if (creado)
-            {
-                toastService.ShowSuccess("El estudiante ha sido creado exitosamente.");
-                NavigationManager.NavigateTo("/Estudiantes/index");
-            }
-            else
-            {
-                toastService.ShowError("No se pudo crear el estudiante.");
-            }
-        }
-        catch (InvalidOperationException ex)
+        resultado.OnSuccess(() =>
         {
-            toastService.ShowError(ex.Message);
-        }
+            toastService.ShowSuccess("El estudiante ha sido creado exitosamente.");
+            NavigationManager.NavigateTo("/Estudiantes/index");
+        });
+
+        resultado.OnFailure(() =>
+        {
+            toastService.ShowError(resultado.Error.Description);
+        });
     }
 }

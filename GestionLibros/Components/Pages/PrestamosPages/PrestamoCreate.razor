@@ -61,29 +61,26 @@
 
     protected override async Task OnInitializedAsync()
     {
-        listaEstudiantes = await estudiantesService.GetList(e => true);
-        listaLibros = await librosService.GetList(l => true);
+        var resultadoEstudiantes = await estudiantesService.GetList(e => true);
+        listaEstudiantes = resultadoEstudiantes.IsSuccess ? resultadoEstudiantes.Value! : new List<Estudiantes>();
+
+        var resultadoLibros = await librosService.GetList(l => true);
+        listaLibros = resultadoLibros.IsSuccess ? resultadoLibros.Value! : new List<Libros>();
     }
 
     private async Task Guardar()
     {
-        try
-        {
-            var creado = await prestamosService.Guardar(prestamo);
+        var resultado = await prestamosService.Guardar(prestamo);
 
-            if (creado)
-            {
-                toastService.ShowSuccess("Préstamo registrado exitosamente.");
-                NavigationManager.NavigateTo("/Prestamos/index");
-            }
-            else
-            {
-                toastService.ShowError("No se pudo registrar el préstamo.");
-            }
-        }
-        catch (InvalidOperationException ex)
+        resultado.OnSuccess(() =>
         {
-            toastService.ShowError(ex.Message);
-        }
+            toastService.ShowSuccess("Préstamo registrado exitosamente.");
+            NavigationManager.NavigateTo("/Prestamos/index");
+        });
+
+        resultado.OnFailure(() =>
+        {
+            toastService.ShowError(resultado.Error.Description);
+        });
     }
 }

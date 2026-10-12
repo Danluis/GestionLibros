@@ -56,23 +56,17 @@
 
     private async Task Guardar()
     {
-        try
-        {
-            var creado = await librosService.Guardar(libro);
+        var resultado = await librosService.Guardar(libro);
 
-            if (creado)
-            {
-                toastService.ShowSuccess("El libro ha sido creado exitosamente.");
-                NavigationManager.NavigateTo("/Libros/index");
-            }
-            else
-            {
-                toastService.ShowError("No se pudo crear el libro.");
-            }
-        }
-        catch (InvalidOperationException ex)
+        resultado.OnSuccess(() =>
         {
-            toastService.ShowError(ex.Message);
-        }
+            toastService.ShowSuccess("El libro ha sido creado exitosamente.");
+            NavigationManager.NavigateTo("/Libros/index");
+        });
+
+        resultado.OnFailure(() =>
+        {
+            toastService.ShowError(resultado.Error.Description);
+        });
     }
 }

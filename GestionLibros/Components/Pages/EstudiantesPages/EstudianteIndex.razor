@@ -74,9 +74,15 @@
     private string textoBusqueda = "";
     private PaginationState paginacion = new PaginationState { ItemsPerPage = 5 };
 
+    private async Task<List<Estudiantes>> ObtenerLista(System.Linq.Expressions.Expression<Func<Estudiantes, bool>> criterio)
+    {
+        var resultado = await EstudiantesService.GetList(criterio);
+        return resultado.IsSuccess ? resultado.Value! : new List<Estudiantes>();
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        estudiantes = await EstudiantesService.GetList(e => true);
+        estudiantes = await ObtenerLista(e => true);
     }
 
     private async Task ManejarTecla(KeyboardEventArgs e)
@@ -91,7 +97,7 @@
     {
         if (string.IsNullOrWhiteSpace(textoBusqueda) || string.IsNullOrEmpty(criterioSeleccionado))
         {
-            estudiantes = await EstudiantesService.GetList(e => true);
+            estudiantes = await ObtenerLista(e => true);
             return;
         }
 
@@ -100,7 +106,7 @@
             case "estudianteId":
                 if (int.TryParse(textoBusqueda, out int idBuscado))
                 {
-                    estudiantes = await EstudiantesService.GetList(e => e.EstudianteId == idBuscado);
+                    estudiantes = await ObtenerLista(e => e.EstudianteId == idBuscado);
                 }
                 else
                 {
@@ -109,15 +115,15 @@
                 break;
 
             case "nombres":
-                estudiantes = await EstudiantesService.GetList(e => e.Nombres.Contains(textoBusqueda));
+                estudiantes = await ObtenerLista(e => e.Nombres.Contains(textoBusqueda));
                 break;
 
             case "email":
-                estudiantes = await EstudiantesService.GetList(e => e.Email.Contains(textoBusqueda));
+                estudiantes = await ObtenerLista(e => e.Email.Contains(textoBusqueda));
                 break;
 
             default:
-                estudiantes = await EstudiantesService.GetList(e => true);
+                estudiantes = await ObtenerLista(e => true);
                 break;
         }
     }

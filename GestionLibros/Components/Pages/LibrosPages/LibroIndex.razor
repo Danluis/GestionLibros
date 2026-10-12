@@ -74,9 +74,15 @@
     private string textoBusqueda = "";
     private PaginationState paginacion = new PaginationState { ItemsPerPage = 5 };
 
+    private async Task<List<Libros>> ObtenerLista(System.Linq.Expressions.Expression<Func<Libros, bool>> criterio)
+    {
+        var resultado = await LibrosService.GetList(criterio);
+        return resultado.IsSuccess ? resultado.Value! : new List<Libros>();
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        libros = await LibrosService.GetList(l => true);
+        libros = await ObtenerLista(l => true);
     }
 
     private async Task ManejarTecla(KeyboardEventArgs e)
@@ -91,7 +97,7 @@
     {
         if (string.IsNullOrWhiteSpace(textoBusqueda) || string.IsNullOrEmpty(criterioSeleccionado))
         {
-            libros = await LibrosService.GetList(l => true);
+            libros = await ObtenerLista(l => true);
             return;
         }
 
@@ -100,7 +106,7 @@
             case "libroId":
                 if (int.TryParse(textoBusqueda, out int idBuscado))
                 {
-                    libros = await LibrosService.GetList(l => l.LibroId == idBuscado);
+                    libros = await ObtenerLista(l => l.LibroId == idBuscado);
                 }
                 else
                 {
@@ -109,17 +115,17 @@
                 break;
 
             case "titulo":
-                libros = await LibrosService.GetList(l => l.Titulo.Contains(textoBusqueda));
+                libros = await ObtenerLista(l => l.Titulo.Contains(textoBusqueda));
                 break;
 
             case "autor":
-                libros = await LibrosService.GetList(l => l.Autor.Contains(textoBusqueda));
+                libros = await ObtenerLista(l => l.Autor.Contains(textoBusqueda));
                 break;
 
             case "anio":
                 if (int.TryParse(textoBusqueda, out int anioBuscado))
                 {
-                    libros = await LibrosService.GetList(l => l.AnoPublicacion == anioBuscado);
+                    libros = await ObtenerLista(l => l.AnoPublicacion == anioBuscado);
                 }
                 else
                 {
@@ -128,7 +134,7 @@
                 break;
 
             default:
-                libros = await LibrosService.GetList(l => true);
+                libros = await ObtenerLista(l => true);
                 break;
         }
     }

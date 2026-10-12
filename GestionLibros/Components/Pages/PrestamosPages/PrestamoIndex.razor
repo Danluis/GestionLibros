@@ -90,9 +90,15 @@
     private GridSort<Prestamos> ordenPorEstudiante = GridSort<Prestamos>.ByAscending(p => p.Estudiante!.Nombres);
     private GridSort<Prestamos> ordenPorLibro = GridSort<Prestamos>.ByAscending(p => p.Libro!.Titulo);
 
+    private async Task<List<Prestamos>> ObtenerLista(System.Linq.Expressions.Expression<Func<Prestamos, bool>> criterio)
+    {
+        var resultado = await PrestamosService.GetList(criterio);
+        return resultado.IsSuccess ? resultado.Value! : new List<Prestamos>();
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        prestamos = await PrestamosService.GetList(p => true);
+        prestamos = await ObtenerLista(p => true);
     }
 
     private async Task ManejarTecla(KeyboardEventArgs e)
@@ -107,26 +113,26 @@
     {
         if (string.IsNullOrWhiteSpace(textoBusqueda) && criterioSeleccionado != "activos")
         {
-            prestamos = await PrestamosService.GetList(p => true);
+            prestamos = await ObtenerLista(p => true);
             return;
         }
 
         switch (criterioSeleccionado)
         {
             case "estudiante":
-                prestamos = await PrestamosService.GetList(p => p.Estudiante!.Nombres.Contains(textoBusqueda));
+                prestamos = await ObtenerLista(p => p.Estudiante!.Nombres.Contains(textoBusqueda));
                 break;
 
             case "libro":
-                prestamos = await PrestamosService.GetList(p => p.Libro!.Titulo.Contains(textoBusqueda));
+                prestamos = await ObtenerLista(p => p.Libro!.Titulo.Contains(textoBusqueda));
                 break;
 
             case "activos":
-                prestamos = await PrestamosService.GetList(p => p.Activo);
+                prestamos = await ObtenerLista(p => p.Activo);
                 break;
 
             default:
-                prestamos = await PrestamosService.GetList(p => true);
+                prestamos = await ObtenerLista(p => true);
                 break;
         }
     }

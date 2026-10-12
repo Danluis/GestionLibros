@@ -1,5 +1,6 @@
 ﻿@page "/Prestamo/edit/{PrestamoId:int}"
 @inject PrestamosService prestamosService
+@inject DevolucionesService devolucionesService
 @inject ToastService toastService
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
@@ -50,6 +51,12 @@
                 <button type="submit" class="btn btn-primary">
                     <span class="bi bi-floppy"></span> Modificar
                 </button>
+                @if (prestamo.Activo)
+                {
+                    <button type="button" class="btn btn-warning" @onclick="Devolver">
+                        <span class="bi bi-box-arrow-in-left"></span> Marcar como devuelto
+                    </button>
+                }
                 <button type="button" class="btn btn-danger" @onclick="Eliminar">
                     <span class="bi bi-trash"></span> Eliminar
                 </button>
@@ -86,10 +93,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var prestamoEncontrado = await prestamosService.Buscar(PrestamoId);
-        if (prestamoEncontrado != null)
+        var resultado = await prestamosService.Buscar(PrestamoId);
+        if (resultado.IsSuccess && resultado.Value is not null)
         {
-            prestamo = prestamoEncontrado;
+            prestamo = resultado.Value;
         }
         else
         {
@@ -100,24 +107,35 @@
 
     private async Task Modificar()
     {
-        try
-        {
-            var actualizado = await prestamosService.Guardar(prestamo);
+        var resultado = await prestamosService.Guardar(prestamo);
 
-            if (actualizado)
-            {
-                toastService.ShowSuccess("Préstamo modificado correctamente");
-                NavigationManager.NavigateTo("/Prestamos/index");
-            }
-            else
-            {
-                toastService.ShowError("No se pudo modificar el préstamo");
-            }
-        }
-        catch (InvalidOperationException ex)
+        resultado.OnSuccess(() =>
         {
-            toastService.ShowError(ex.Message);
-        }
+            toastService.ShowSuccess("Préstamo modificado correctamente");
+            NavigationManager.NavigateTo("/Prestamos/index");
+        });
+
+        resultado.OnFailure(() =>
+        {
+            toastService.ShowError(resultado.Error.Description);
+        });
+    }
+
+    private async Task Devolver()
+    {
+        var devolucion = new Devolucion { PrestamoId = prestamo.PrestamoId };
+        var resultado = await devolucionesService.Guardar(devolucion);
+
+        resultado.OnSuccess(() =>
+        {
+            toastService.ShowSuccess("Libro devuelto correctamente");
+            NavigationManager.NavigateTo("/Prestamos/index");
+        });
+
+        resultado.OnFailure(() =>
+        {
+            toastService.ShowError(resultado.Error.Description);
+        });
     }
 
     private void Eliminar()
@@ -134,16 +152,17 @@
     {
         mostrarModal = false;
 
-        var eliminado = await prestamosService.Eliminar(prestamo.PrestamoId);
+        var resultado = await prestamosService.Eliminar(prestamo.PrestamoId);
 
-        if (eliminado)
+        resultado.OnSuccess(() =>
         {
             toastService.ShowSuccess("Préstamo eliminado correctamente");
             NavigationManager.NavigateTo("/Prestamos/index");
-        }
-        else
+        });
+
+        resultado.OnFailure(() =>
         {
-            toastService.ShowError("No se pudo eliminar el préstamo");
-        }
+            toastService.ShowError(resultado.Error.Description);
+        });
     }
 }

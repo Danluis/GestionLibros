@@ -1,0 +1,67 @@
+﻿@page "/Libros/PromedioDias"
+@inject PrestamosService prestamosService
+@inject DevolucionesService devolucionesService
+@rendermode InteractiveServer
+
+<PageTitle>Promedio de Días Prestado</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">Promedio de Días Prestado por Libro</h5>
+        </div>
+        <div class="card-body">
+            @if (datos is null)
+            {
+                <p>Cargando...</p>
+            }
+            else if (!datos.Any())
+            {
+                <p>No hay devoluciones registradas todavía.</p>
+            }
+            else
+            {
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Cantidad de Préstamos Devueltos</th>
+                            <th>Promedio de Días</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var fila in datos)
+                        {
+                            <tr>
+                                <td>@fila.Titulo</td>
+                                <td>@fila.Cantidad</td>
+                                <td>@fila.PromedioDias.ToString("F1")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<(string Titulo, int Cantidad, double PromedioDias)>? datos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resultadoDevoluciones = await devolucionesService.GetList(d => true);
+        var devoluciones = resultadoDevoluciones.IsSuccess ? resultadoDevoluciones.Value! : new List<Devolucion>();
+
+        datos = devoluciones
+            .Where(d => d.Prestamo?.Libro is not null)
+            .GroupBy(d => d.Prestamo!.Libro!.Titulo)
+            .Select(g => (
+                Titulo: g.Key,
+                Cantidad: g.Count(),
+                PromedioDias: g.Average(d => (d.FechaDevolucion - d.Prestamo!.FechaPrestamo).TotalDays)
+            ))
+            .OrderByDescending(x => x.PromedioDias)
+            .ToList();
+    }
+}

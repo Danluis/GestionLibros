@@ -17,4 +17,6 @@ public class Libros
     [Required(ErrorMessage = "Este campo es obligatorio")]
     [Range(1, 9999, ErrorMessage = "Ingrese un año válido")]
     public int AnoPublicacion { get; set; }
+
+    public int CantidadDisponible { get; set; }
 }
